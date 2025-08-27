@@ -37,10 +37,15 @@ Here we will look at the result of the place and route and then we will close th
 `source ./Scripts/Switch_scripts/Verifica.tcl`\
 `Verifica`\
 `get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/req_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I0] -max_paths 100`\
+ \
 `get_property DATAPATH_DELAY -min  [get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/req_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I0] -max_paths 1000]`\
+ \
 `get_property DATAPATH_DELAY -min  [get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/req_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I0] -max_paths 1000 -hold]`\
+ \
 `get_property DATAPATH_DELAY -max  [get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/*.Data_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I1] -max_paths 1000 -hold ]`\
+ \
 `get_property DATAPATH_DELAY -max  [get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/*.Data_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I1] -max_paths 1000] `\
+ \
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -unroute`\
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -min_delay 500`\
 `Verifica`\
