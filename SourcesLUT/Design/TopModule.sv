@@ -4,8 +4,8 @@ module TopModule_Switch
 #(
 	parameter WIDTH = 128, // larghezza del bundled data.=256
 	parameter PORTS =5,
-	parameter int BUFNumber [PORTS-1:0]= {6,6,5,7,5},
-	parameter int BUFNumberIO [PORTS-1:0]= {4,2,3,4,4}
+	parameter int BUFNumber [PORTS-1:0]= {0,0,0,0,0},
+	parameter int BUFNumberIO [PORTS-1:0]= {0,0,0,0,0}
   
 )
 (
@@ -37,6 +37,7 @@ module TopModule_Switch
     */
     Switch#(WIDTH,2,2,4,1,BUFNumber,BUFNumberIO) mySwitch(reset,gen_enable,req_up_i,DataAuxIn,ack_up_o,req_dw_o,DataAuxOut,ack_dw_i);
 endmodule
+
 
 
 
