@@ -43,8 +43,9 @@ Here we will look at the result of the place and route and then we will close th
 `get_property DATAPATH_DELAY -max  [get_timing_paths -from [get_pins mySwitch/genblk1[0].IPMS/input_pipe/*.Data_latch/Q] -to [get_pins mySwitch/genblk1[0].IPMS/PRC/*.RouteAnd/I1] -max_paths 1000] `\
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -unroute`\
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -min_delay 500`\
+`Verifica`\
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -unroute `\
 `route_design -pins [get_pins mySwitch/genblk1[0].IPMS/PRC/XOR/I0] -min_delay 1`\
 `source ./GenerationScripts/SwitchSoloReq/Bundle.tcl`\
 `FixBundle`\
-`Verifica`\
+`Verifica`

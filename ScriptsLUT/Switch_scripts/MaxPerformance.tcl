@@ -1,0 +1,56 @@
+#procedura per l'ottimizzazione
+proc MaxTimeConstrainIPM {Switch Iport fileDescriptor} {
+	puts $fileDescriptor [subst "\n\n#Puts max_delay constrain in $Iport"]
+	#usando i doppi apici non mi funziona l'escape del carattere
+	#se non si dichiarano gli endpoint con get_pins ma con get_cells prende quelli sbagliati e questo porta a path segmentation-> alcuni vincoli vengono eliminati
+	#ClosureTimings
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Iport/input_pipe/req_latch/Q\] -to \[get_pins $Iport/input_pipe/*.Data_latch/GE\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Iport/input_pipe/req_latch/Q\] -to \[get_pins $Iport/input_pipe/req_latch/GE\] 0.000}]
+	#Data->and
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Iport/input_pipe/*.Data_latch/Q\] -to \[get_pins $Iport/PRC/*.RouteAnd/I1\] 0.000}]
+	#req->and
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Iport/input_pipe/req_latch/Q\] -to \[get_pins $Iport/PRC/*.RouteAnd/I0\] 0.000}]
+	puts $fileDescriptor "\n\n"
+}
+
+#procedura per l'ottimizzazione
+proc MaxTimeConstrainOPM {Switch Oport fileDescriptor} {
+	puts $fileDescriptor [subst "\n\n#Puts max_delay constrain in $Oport"]
+	#ClosureTimings
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/output_pipe/req_latch/Q\] -to \[get_pins $Oport/output_pipe/*.Data_latch/GE\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/output_pipe/req_latch/Q\] -to \[get_pins $Oport/output_pipe/req_latch/GE\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/OPM_Mutex/*.Mutex_not/O\] -to \[get_pins $Oport/*.LatchBarrier/GE\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/*.LatchBarrier/Q\] -to \[get_pins $Oport/output_pipe/req_latch/D\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/OPM_Mutex/*.Mutex_not/O\] -to \[get_pins $Oport/output_pipe/*.Data_latch/D\] 0.000}]
+	puts $fileDescriptor [subst {set_max_delay -from \[get_pins $Oport/*.Tailpassed_up_o_reg\[*\]/C\] -to \[get_pins $Oport/*.LatchBarrier/GE\] 0.000}]
+	puts $fileDescriptor "\n\n"
+}
+
+#---------------MAIN----------------#
+#Global variables
+	set InportPortModule "ipm"
+	set OutportPortModule "opm"
+	set Switch "Switch"
+
+#---------Ottimizzazione
+	#open_run synth_1 -name synth_1
+	set f [open TempLUT.xdc w+]
+	#---------Preparazione Constraint File
+	set Switches [get_cells -hierarchical -filter [subst {ORIG_REF_NAME== $Switch || REF_NAME== $Switch}]]
+	foreach Switch $Switches {
+		set InportModules [get_cells -filter [subst {ORIG_REF_NAME== $InportPortModule || REF_NAME== $InportPortModule}] $Switches/*]
+		foreach Iport $InportModules {
+			MaxTimeConstrainIPM $Switch $Iport $f
+		}
+		set OutportModules [get_cells -filter [subst {ORIG_REF_NAME== $OutportPortModule || REF_NAME== $OutportPortModule}] $Switches/*]
+		foreach Oport $OutportModules {
+			MaxTimeConstrainOPM $Switch $Oport $f
+		}
+	}
+
+	close $f
+	if ([string equal [lindex $tcl_platform(os) 0] "Windows"]) {
+		exec cmd.exe /c "move TempLUT.xdc ./SourcesLUT/Constraints/BundledConstraints.xdc"
+	} else {
+		exec mv TempLUT.xdc ./SourcesLUT/Constraints/BundledConstraints.xdc
+	}
